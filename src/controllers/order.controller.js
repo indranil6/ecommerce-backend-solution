@@ -3,6 +3,7 @@ const prisma = require("../lib/prisma");
 // POST /api/orders/create
 exports.createOrderFromCart = async (req, res) => {
   const userId = req.user.id;
+  const { addressId } = req.body;
 
   const cart = await prisma.cart.findUnique({
     where: { userId },
@@ -32,6 +33,7 @@ exports.createOrderFromCart = async (req, res) => {
   const order = await prisma.order.create({
     data: {
       userId,
+      shippingAddressId: addressId,
       totalAmount,
       items: {
         create: orderItems,
@@ -41,4 +43,53 @@ exports.createOrderFromCart = async (req, res) => {
   });
 
   res.status(201).json(order);
+};
+//order history
+exports.getMyOrders = async (req, res) => {
+  const userId = req.user.id;
+
+  const orders = await prisma.order.findMany({
+    where: { userId },
+    include: {
+      items: {
+        include: {
+          product: {
+            include: { images: true },
+          },
+        },
+      },
+      shippingAddress: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  res.json(orders);
+};
+
+exports.getOrderById = async (req, res) => {
+  const userId = req.user.id;
+  const orderId = parseInt(req.params.id);
+
+  const order = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+      userId,
+    },
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
+      shippingAddress: true,
+    },
+  });
+
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  res.json(order);
 };

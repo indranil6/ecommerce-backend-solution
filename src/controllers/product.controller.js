@@ -54,3 +54,14 @@ exports.createProduct = async (req, res) => {
 
   res.status(201).json(product);
 };
+exports.updateStock = async (req, res) => {
+  const { productId } = req.params;
+  const { stock } = req.body;
+
+  const product = await prisma.product.update({
+    where: { id: parseInt(productId) },
+    data: { stock },
+  });
+
+  res.json(product);
+};

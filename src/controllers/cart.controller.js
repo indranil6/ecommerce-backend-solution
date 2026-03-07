@@ -43,6 +43,23 @@ exports.addToCart = async (req, res) => {
   const userId = req.user.id;
   const { productId, quantity = 1 } = req.body;
 
+  // Check if product exists and has stock
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  });
+
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  if (product.stock <= 0) {
+    return res.status(400).json({ message: "Product is out of stock" });
+  }
+
+  if (quantity > product.stock) {
+    return res.status(400).json({ message: `Insufficient stock. Available: ${product.stock}` });
+  }
+
   const cart = await getOrCreateCart(userId);
 
   const item = await prisma.cartItem.upsert({
@@ -72,6 +89,19 @@ exports.updateCartItem = async (req, res) => {
 
   if (quantity <= 0) {
     return res.status(400).json({ message: "Quantity must be >= 1" });
+  }
+
+  // Check if product exists and has sufficient stock
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  });
+
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  if (quantity > product.stock) {
+    return res.status(400).json({ message: `Insufficient stock. Available: ${product.stock}` });
   }
 
   const cart = await getOrCreateCart(userId);
