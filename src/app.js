@@ -16,6 +16,7 @@ app.use("/api/orders", require("./routes/order.routes"));
 app.use("/api/orderstatus", require("./routes/orderStatus.routes"));
 app.use("/api/payment", require("./routes/payment.routes"));
 app.use("/api/addresses", require("./routes/address.routes"));
+app.use("/api/profile", require("./routes/profile.routes"));
 
 app.get("/", (req, res) => {
   res.send("E-commerce Backend is running 🚀");
