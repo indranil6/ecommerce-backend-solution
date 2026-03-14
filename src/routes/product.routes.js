@@ -3,6 +3,7 @@ const {
   getProducts,
   getProductBySlug,
   createProduct,
+  updateStock,
 } = require("../controllers/product.controller");
 
 router.get("/", getProducts);
